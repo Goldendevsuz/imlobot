@@ -9,32 +9,43 @@ from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-import wikipedia
+from aiogram.filters.command import Command
 from dotenv import load_dotenv
+
+from check_word import check_word
+from transliterate import to_cyrillic
 
 load_dotenv()
 
 # Bot token can be obtained via https://t.me/BotFather
 TOKEN = getenv("BOT_TOKEN")
 
-wikipedia.set_lang('uz')
-
 # All handlers should be attached to the Router (or Dispatcher)
 
 dp = Dispatcher()
 
-
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    await message.reply("Wikipeida Botiga Xush Kelibsiz!")
+    await message.reply("uz_imlo Botiga Xush Kelibsiz!")
+
+@dp.message(Command("help"))
+async def command_start_handler(message: Message) -> None:
+    await message.reply("Botdan foydalanish uchun so'z yuboring.")
 
 @dp.message()
-async def send_wiki(message: Message) -> None:
-    try:
-        respond = wikipedia.summary(message.text)
-        await message.reply(respond)
-    except:
-        await message.reply("Bu mavzuga oid maqola topilmadi")
+async def check_imlo(message: Message) -> None:
+    word = message.text
+    if word.isascii():
+        word = to_cyrillic(word)
+
+    result = check_word(word)
+    if result['available']:
+        response = f"✅\t{word.capitalize()}"
+    else:
+        response = f"❌\t{word.capitalize()}\n"
+        for text in result['matches']:
+            response += f"✅\t{text.capitalize()}\n"
+    await message.answer(response)
 
 async def main() -> None:
     # Initialize Bot instance with default bot properties which will be passed to all API calls

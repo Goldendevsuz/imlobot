@@ -1,1 +1,1 @@
-# wikibot
+# imlobot
